@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "naukri-profile-updater"
+version = "1.0.0"
+description = "Automated Naukri.com profile updater to keep your profile fresh and visible to recruiters"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "playwright>=1.40",
+    "python-dotenv>=1.0",
+    "schedule>=1.2",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-mock>=3.12",
+]
+
+[tool.setuptools.packages.find]
+include = ["naukri_updater*"]

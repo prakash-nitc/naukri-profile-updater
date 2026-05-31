@@ -1,0 +1,8 @@
+playwright>=1.40
+python-dotenv>=1.0
+schedule>=1.2
+requests>=2.31
+
+# Dev dependencies
+pytest>=7.4
+pytest-mock>=3.12
