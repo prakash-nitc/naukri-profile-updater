@@ -1,0 +1,24 @@
+services:
+  naukri-updater:
+    build: .
+    container_name: naukri_profile_updater
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Always override for Docker — Xvfb handles the virtual display
+      - SESSION_FILE=/app/data/naukri_session.json
+      - LOG_FILE=/app/data/naukri_updater.log
+      - HEADLESS=false
+    volumes:
+      # Persist session and logs across container restarts
+      - naukri_data:/app/data
+    shm_size: "256mb"     # Chromium needs extra shared memory
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  naukri_data:
