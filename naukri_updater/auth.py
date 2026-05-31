@@ -84,14 +84,20 @@ def login(page: Page, config: Config) -> None:
     page.goto(
         "https://www.naukri.com/nlogin/login", wait_until="domcontentloaded"
     )
-    page.wait_for_load_state("networkidle", timeout=10000)
+    try:
+        page.wait_for_load_state("networkidle", timeout=30000)
+    except PlaywrightTimeoutError:
+        logger.debug("Login page networkidle timed out — continuing anyway.")
     accept_cookie_if_present(page)
 
     # ── Fill email ───────────────────────────────────────────────────────
     if not _fill_first_visible(page, LOGIN.email, config.email, "email"):
         logger.info("Trying homepage login flow...")
         page.goto("https://www.naukri.com/", wait_until="domcontentloaded")
-        page.wait_for_load_state("networkidle", timeout=10000)
+        try:
+            page.wait_for_load_state("networkidle", timeout=30000)
+        except PlaywrightTimeoutError:
+            logger.debug("Homepage networkidle timed out — continuing anyway.")
         accept_cookie_if_present(page)
 
         # Click a login opener link/button.
@@ -100,7 +106,10 @@ def login(page: Page, config: Config) -> None:
                 opener = page.locator(selector).first
                 if opener.is_visible(timeout=1200):
                     opener.click(timeout=3000)
-                    page.wait_for_load_state("networkidle", timeout=8000)
+                    try:
+                        page.wait_for_load_state("networkidle", timeout=20000)
+                    except PlaywrightTimeoutError:
+                        pass
                     break
             except Exception:
                 continue
@@ -144,7 +153,10 @@ def login(page: Page, config: Config) -> None:
     except PlaywrightTimeoutError:
         logger.debug("URL wait timed out — checking login status anyway.")
 
-    page.wait_for_load_state("networkidle", timeout=10000)
+    try:
+        page.wait_for_load_state("networkidle", timeout=30000)
+    except PlaywrightTimeoutError:
+        logger.debug("Post-login networkidle timed out — continuing anyway.")
 
     if "login" in page.url.lower():
         raise RuntimeError(
@@ -232,7 +244,10 @@ def has_profile_access(page: Page, profile_url: str) -> bool:
     """
     logger.info("Checking profile access...")
     page.goto(profile_url, wait_until="domcontentloaded")
-    page.wait_for_load_state("networkidle", timeout=10000)
+    try:
+        page.wait_for_load_state("networkidle", timeout=30000)
+    except PlaywrightTimeoutError:
+        logger.debug("Profile page networkidle timed out — continuing anyway.")
     logger.debug("Profile page URL: %s", page.url)
 
     if "login" in page.url.lower():

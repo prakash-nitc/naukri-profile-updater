@@ -259,7 +259,8 @@ def update_name_randomly(page: Page, config: Config) -> bool:
         logger.warning("Could not click Personal Details edit control.")
         return False
 
-    page.wait_for_timeout(1000)
+    # Wait for the edit drawer animation to finish.
+    page.wait_for_timeout(2500)
     container = get_visible_edit_container(page)
 
     # Split into first/last name.
@@ -271,16 +272,25 @@ def update_name_randomly(page: Page, config: Config) -> bool:
     updated = False
     scope = container if container is not None else page
 
-    # Try dedicated first/last name fields.
-    first_ok = fill_first_visible_input(scope, PROFILE.first_name, first_name)
-    last_ok = fill_first_visible_input(scope, PROFILE.last_name, last_name)
-    updated = first_ok or last_ok
+    # Try to fill name fields — retry a few times as form may still render.
+    for attempt in range(3):
+        # Try dedicated first/last name fields.
+        first_ok = fill_first_visible_input(scope, PROFILE.first_name, first_name)
+        last_ok = fill_first_visible_input(scope, PROFILE.last_name, last_name)
+        updated = first_ok or last_ok
 
-    # Fallback: single full-name field.
-    if not updated:
-        updated = fill_first_visible_input(
-            scope, PROFILE.full_name, target_name
-        )
+        # Fallback: single full-name field.
+        if not updated:
+            updated = fill_first_visible_input(
+                scope, PROFILE.full_name, target_name
+            )
+
+        if updated:
+            break
+
+        # Form might still be rendering — wait and retry.
+        logger.debug("Name field not found on attempt %d, retrying...", attempt + 1)
+        page.wait_for_timeout(1500)
 
     if not updated:
         logger.warning("Could not find editable name fields.")
@@ -313,7 +323,27 @@ def touch_profile_save(page: Page) -> bool:
     if click_save_if_visible(page):
         return True
 
-    # Strategy 2: open any editable section and save.
+    # Strategy 2: click a pencil icon to open edit drawer, then save.
+    for pencil_selector in ("span.new-pencil", "[class*='pencil']"):
+        try:
+            pencil = page.locator(pencil_selector).first
+            if pencil.is_visible(timeout=2000):
+                pencil.click(timeout=3000)
+                page.wait_for_timeout(1500)
+
+                # Wait for the edit drawer/form to appear.
+                container = get_visible_edit_container(page)
+                if container is not None:
+                    if click_save_in_container(page, container):
+                        logger.info("Opened edit drawer via pencil and clicked Save.")
+                        return True
+                elif click_save_if_visible(page):
+                    logger.info("Opened edit drawer via pencil and clicked Save.")
+                    return True
+        except Exception:
+            continue
+
+    # Strategy 3: open any editable section and save.
     for edit_selector in PROFILE.generic_edit:
         try:
             edit_btn = page.locator(edit_selector).first

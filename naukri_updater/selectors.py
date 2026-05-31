@@ -72,6 +72,7 @@ class ProfileSelectors:
         "input[value='Save']",
         "button[class*='save']",
         "button[data-ga-track*='save']",
+        "button[type='submit']",
     )
 
     modal_save_buttons: tuple[str, ...] = (
@@ -85,28 +86,37 @@ class ProfileSelectors:
         "button:has-text('Save')",
         "button:has-text('Save changes')",
         "button:has-text('Update')",
+        "button[type='submit']",
         "input[type='submit']",
         "[role='button']:has-text('Save')",
         "[role='button']:has-text('Update')",
     )
 
-    # ── Edit controls ────────────────────────────────────────────────────
+    # ── Edit controls (pencil icons) ─────────────────────────────────────
+    # Naukri uses span.new-pencil icons inside headings, not text buttons.
     generic_edit: tuple[str, ...] = (
+        "span.new-pencil",
         "button:has-text('Edit')",
         "a:has-text('Edit')",
         "[class*='edit']",
         "[data-ga-track*='edit']",
     )
 
+    # Direct selectors to click the pencil icon on the name / personal
+    # details section.  The h1 with data-id="name" contains the pencil.
     personal_details_edit: tuple[str, ...] = (
+        "h1[data-id='name'] span.new-pencil",
+        ".personal-details span.new-pencil",
+        ".user-basic-summary-container span.new-pencil",
+        "[data-id='name'] span.new-pencil",
+        ".personal-details [class*='pencil']",
+        "section:has-text('Personal details') span.new-pencil",
+        "div:has-text('Personal details') span.new-pencil",
+        "section:has-text('Basic details') span.new-pencil",
+        "div:has-text('Basic details') span.new-pencil",
         "section:has-text('Personal details') button:has-text('Edit')",
-        "section:has-text('Personal Details') button:has-text('Edit')",
-        "section:has-text('Personal details') a:has-text('Edit')",
-        "section:has-text('Personal Details') a:has-text('Edit')",
-        "div:has-text('Personal details') button:has-text('Edit')",
         "div:has-text('Personal Details') button:has-text('Edit')",
         "div:has-text('Name') button:has-text('Edit')",
-        "div:has-text('Name') a:has-text('Edit')",
         "[data-ga-track*='personal'] [class*='edit']",
     )
 
@@ -119,12 +129,14 @@ class ProfileSelectors:
     )
 
     card_scoped_edit: tuple[str, ...] = (
+        "span.new-pencil",
         "button:has-text('Edit')",
         "a:has-text('Edit')",
         "button[aria-label*='Edit']",
         "[role='button'][aria-label*='Edit']",
         "[class*='edit'][role='button']",
         "[class*='icon'][class*='edit']",
+        "[class*='pencil']",
     )
 
     card_containers: tuple[str, ...] = (
@@ -133,16 +145,19 @@ class ProfileSelectors:
         "article:has-text('{heading}')",
     )
 
-    # ── Edit containers / modals ─────────────────────────────────────────
+    # ── Edit containers / modals / drawers ───────────────────────────────
     edit_containers: tuple[str, ...] = (
+        "form#editBasicDetailsForm",
+        ".basic-details-component",
+        "[class*='drawer']",
         "[role='dialog']",
         ".modal",
         "[class*='modal']",
-        "[class*='drawer']",
         "[class*='popup']",
     )
 
     # ── Name fields ──────────────────────────────────────────────────────
+    # Inside the editBasicDetailsForm, the name is a single text input.
     first_name: tuple[str, ...] = (
         "input[aria-label*='First']",
         "input[name*='first']",
@@ -158,12 +173,15 @@ class ProfileSelectors:
     )
 
     full_name: tuple[str, ...] = (
+        "#editBasicDetailsForm input[type='text']",
+        ".basic-details-component input[type='text']",
         "input[aria-label='Name']",
         "input[aria-label*='Full']",
         "input[name='name']",
         "input[name*='fullName']",
         "input[id='name']",
         "input[placeholder*='Name']",
+        "input[placeholder*='name']",
     )
 
 
