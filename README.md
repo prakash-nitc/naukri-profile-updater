@@ -56,6 +56,24 @@ naukri-profile-updater/
 
 ### Installation
 
+**Quick setup (one command).** After cloning, run the setup script for your OS
+— it creates a virtual environment, installs dependencies, and downloads the
+Chromium browser:
+
+```bash
+# Windows
+setup.bat
+
+# macOS / Linux
+chmod +x setup.sh && ./setup.sh
+```
+
+Then jump to [Web Dashboard](#-web-dashboard-easiest--recommended-for-first-timers).
+Prefer to do it by hand? Follow the manual steps below.
+
+<details>
+<summary>Manual installation</summary>
+
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/YOUR_USERNAME/naukri-profile-updater.git
@@ -82,6 +100,10 @@ naukri-profile-updater/
    cp .env.example .env
    # Edit .env with your credentials and preferences
    ```
+
+   (Or skip this step and configure everything from the web dashboard.)
+
+</details>
 
 ### Configuration Reference
 
@@ -125,6 +147,26 @@ NOTIFY_EMAIL_TO=you@gmail.com
 ```
 
 ## 🚀 Usage
+
+### 🖥 Web Dashboard (easiest — recommended for first-timers)
+
+No `.env` editing required. Configure everything — credentials, schedule,
+name variants, notifications — from your browser, then Start/Stop and watch
+live logs.
+
+```bash
+python dashboard.py
+# then open http://localhost:5000
+```
+
+From the dashboard you can:
+- Enter your Naukri email/password (saved to a local `.env`, never uploaded)
+- Choose **Every N minutes** or **Daily at a fixed time**
+- Toggle name rotation and headless mode
+- Start/stop the updater and see the next scheduled run + live logs
+
+> The dashboard binds to `127.0.0.1` (your machine only). Your credentials
+> stay in a local `.env` file that is git-ignored and never leaves your computer.
 
 ### Run Directly
 

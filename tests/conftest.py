@@ -39,3 +39,9 @@ def clean_env(monkeypatch):
     ]
     for var in env_vars:
         monkeypatch.delenv(var, raising=False)
+
+    # Prevent load_config() from reading a developer's real .env file, which
+    # would repopulate the vars we just cleared and break test isolation.
+    monkeypatch.setattr(
+        "naukri_updater.config.load_dotenv", lambda *a, **k: False
+    )

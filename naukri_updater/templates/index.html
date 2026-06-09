@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naukri Profile Updater</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <div class="logo">🚀</div>
+            <div>
+                <h1>Naukri Updater</h1>
+                <p class="subtitle">Keep your profile fresh, automatically</p>
+            </div>
+        </div>
+        <div class="status-badge" id="statusBadge">
+            <span class="status-dot"></span>
+            <span class="status-text">Stopped</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon">🕐</div>
+                <div class="stat-info">
+                    <span class="stat-label">Last Update</span>
+                    <span class="stat-value" id="lastUpdate">Never</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Updates</span>
+                    <span class="stat-value" id="totalUpdates">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-info">
+                    <span class="stat-label">Last Result</span>
+                    <span class="stat-value" id="lastResult">—</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-info">
+                    <span class="stat-label">Running Since</span>
+                    <span class="stat-value" id="startedAt">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control + Config row -->
+        <div class="two-col">
+            <!-- Controls Panel -->
+            <div class="panel controls-panel">
+                <h2>Controls</h2>
+                <div class="control-buttons">
+                    <button class="btn btn-start" id="btnStart" onclick="startUpdater()">
+                        <span class="btn-icon">▶</span> Start Updater
+                    </button>
+                    <button class="btn btn-stop" id="btnStop" onclick="stopUpdater()" disabled>
+                        <span class="btn-icon">⏹</span> Stop Updater
+                    </button>
+                </div>
+                <div class="control-info">
+                    <p>The updater will run the first update immediately, then repeat on schedule.</p>
+                </div>
+
+                <h3>Quick Settings</h3>
+                <div class="form-group">
+                    <label>Schedule Type</label>
+                    <select id="cfgScheduleType" onchange="onScheduleTypeChange()">
+                        <option value="interval">Every N minutes</option>
+                        <option value="daily">Daily at a fixed time</option>
+                    </select>
+                </div>
+                <div class="form-group" id="intervalGroup">
+                    <label>Interval (minutes)</label>
+                    <input type="number" id="cfgInterval" min="1" max="1440" value="240" placeholder="240">
+                </div>
+                <div class="form-group" id="dailyGroup" style="display:none;">
+                    <label>Daily Time</label>
+                    <input type="time" id="cfgDailyTime" value="09:30">
+                </div>
+                <div class="control-info" style="margin-top:8px;">
+                    <p>Next run: <span id="nextRun">—</span></p>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Name Rotation</label>
+                        <select id="cfgNameRotation">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Headless</label>
+                        <select id="cfgHeadless">
+                            <option value="true">Yes (invisible)</option>
+                            <option value="false">No (visible)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-save" onclick="saveConfig()">
+                    💾 Save Settings
+                </button>
+                <div id="saveMsg" class="save-msg"></div>
+            </div>
+
+            <!-- Credentials Panel -->
+            <div class="panel credentials-panel">
+                <h2>Account</h2>
+                <div class="form-group">
+                    <label>Naukri Email</label>
+                    <input type="email" id="cfgEmail" placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Naukri Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="cfgPassword" placeholder="••••••••">
+                        <button class="toggle-pw" onclick="togglePassword()">👁</button>
+                    </div>
+                </div>
+
+                <h3>Name Variants</h3>
+                <div class="form-group">
+                    <label>Variant 1</label>
+                    <input type="text" id="cfgName1" placeholder="Prakash Kumar Sarangi">
+                </div>
+                <div class="form-group">
+                    <label>Variant 2 (slight change)</label>
+                    <input type="text" id="cfgName2" placeholder="Prakash kumar Sarangi">
+                </div>
+
+                <h3>Notifications (optional)</h3>
+                <div class="form-group">
+                    <label>Telegram Bot Token</label>
+                    <input type="text" id="cfgTgToken" placeholder="123456:ABC-DEF...">
+                </div>
+                <div class="form-group">
+                    <label>Telegram Chat ID</label>
+                    <input type="text" id="cfgTgChat" placeholder="987654321">
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Panel -->
+        <div class="panel logs-panel">
+            <div class="logs-header">
+                <h2>Live Logs</h2>
+                <button class="btn btn-small" onclick="clearLogs()">Clear</button>
+            </div>
+            <div class="log-container" id="logContainer">
+                <div class="log-empty">No logs yet. Start the updater to see activity.</div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Naukri Profile Auto-Updater v1.0.0 · <a href="https://github.com/prakash-nitc/naukri-profile-updater" target="_blank">GitHub</a></p>
+    </footer>
+
+    <script>
+        // ── State ──────────────────────────────────────
+        let isRunning = false;
+        let pollInterval = null;
+
+        // ── API helpers ────────────────────────────────
+        async function api(url, method = 'GET', body = null) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(url, opts);
+            return res.json();
+        }
+
+        // ── Status polling ─────────────────────────────
+        async function pollStatus() {
+            try {
+                const s = await api('/api/status');
+                isRunning = s.running;
+
+                const badge = document.getElementById('statusBadge');
+                badge.className = 'status-badge ' + (isRunning ? 'running' : 'stopped');
+                badge.querySelector('.status-text').textContent = isRunning ? 'Running' : 'Stopped';
+
+                document.getElementById('lastUpdate').textContent = s.last_update || 'Never';
+                document.getElementById('totalUpdates').textContent = s.total_updates;
+                document.getElementById('startedAt').textContent = s.started_at || '—';
+
+                const lr = document.getElementById('lastResult');
+                lr.textContent = s.last_result ? s.last_result.charAt(0).toUpperCase() + s.last_result.slice(1) : '—';
+                lr.className = 'stat-value ' + (s.last_result || '');
+
+                document.getElementById('nextRun').textContent =
+                    (isRunning && s.next_run) ? s.next_run : '—';
+
+                document.getElementById('btnStart').disabled = isRunning;
+                document.getElementById('btnStop').disabled = !isRunning;
+            } catch (e) {
+                console.error('Status poll error:', e);
+            }
+        }
+
+        // ── Log polling ────────────────────────────────
+        let lastLogCount = 0;
+        async function pollLogs() {
+            try {
+                const logs = await api('/api/logs');
+                if (logs.length === lastLogCount) return;
+                lastLogCount = logs.length;
+
+                const container = document.getElementById('logContainer');
+                container.innerHTML = logs.map(l => {
+                    const levelClass = l.level.toLowerCase();
+                    return `<div class="log-line ${levelClass}">
+                        <span class="log-time">${l.time}</span>
+                        <span class="log-level">${l.level}</span>
+                        <span class="log-msg">${escapeHtml(l.message)}</span>
+                    </div>`;
+                }).join('');
+
+                container.scrollTop = container.scrollHeight;
+            } catch (e) {
+                console.error('Log poll error:', e);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML =
+                '<div class="log-empty">Logs cleared.</div>';
+            lastLogCount = 0;
+        }
+
+        // ── Controls ───────────────────────────────────
+        async function startUpdater() {
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStart').textContent = '⏳ Starting...';
+            await saveConfig();
+            const res = await api('/api/start', 'POST');
+            if (!res.ok) alert(res.error || 'Failed to start');
+            document.getElementById('btnStart').innerHTML = '<span class="btn-icon">▶</span> Start Updater';
+            pollStatus();
+        }
+
+        async function stopUpdater() {
+            document.getElementById('btnStop').disabled = true;
+            await api('/api/stop', 'POST');
+            pollStatus();
+        }
+
+        // ── Config ─────────────────────────────────────
+        function onScheduleTypeChange() {
+            const type = document.getElementById('cfgScheduleType').value;
+            document.getElementById('intervalGroup').style.display =
+                type === 'interval' ? '' : 'none';
+            document.getElementById('dailyGroup').style.display =
+                type === 'daily' ? '' : 'none';
+        }
+
+        async function loadConfig() {
+            const c = await api('/api/config');
+            document.getElementById('cfgEmail').value = c.NAUKRI_EMAIL || '';
+            document.getElementById('cfgPassword').value = c.NAUKRI_PASSWORD || '';
+            // Daily time wins if it's set; otherwise interval mode.
+            if (c.UPDATE_AT_HHMM) {
+                document.getElementById('cfgScheduleType').value = 'daily';
+                document.getElementById('cfgDailyTime').value = c.UPDATE_AT_HHMM;
+                document.getElementById('cfgInterval').value = c.UPDATE_EVERY_MINUTES || '240';
+            } else {
+                document.getElementById('cfgScheduleType').value = 'interval';
+                document.getElementById('cfgInterval').value = c.UPDATE_EVERY_MINUTES || '240';
+            }
+            onScheduleTypeChange();
+            document.getElementById('cfgHeadless').value = (c.HEADLESS || 'true').toLowerCase();
+            document.getElementById('cfgNameRotation').value = (c.ENABLE_RANDOM_NAME_UPDATE || 'false').toLowerCase();
+            document.getElementById('cfgName1').value = c.NAME_VARIANT_1 || '';
+            document.getElementById('cfgName2').value = c.NAME_VARIANT_2 || '';
+            document.getElementById('cfgTgToken').value = c.NOTIFY_TELEGRAM_BOT_TOKEN || '';
+            document.getElementById('cfgTgChat').value = c.NOTIFY_TELEGRAM_CHAT_ID || '';
+        }
+
+        async function saveConfig() {
+            // Send exactly one schedule key non-empty; the backend rejects both.
+            const scheduleType = document.getElementById('cfgScheduleType').value;
+            const isDaily = scheduleType === 'daily';
+            const data = {
+                NAUKRI_EMAIL: document.getElementById('cfgEmail').value,
+                NAUKRI_PASSWORD: document.getElementById('cfgPassword').value,
+                UPDATE_EVERY_MINUTES: isDaily ? '' : document.getElementById('cfgInterval').value,
+                UPDATE_AT_HHMM: isDaily ? document.getElementById('cfgDailyTime').value : '',
+                HEADLESS: document.getElementById('cfgHeadless').value,
+                ENABLE_RANDOM_NAME_UPDATE: document.getElementById('cfgNameRotation').value,
+                NAME_VARIANT_1: document.getElementById('cfgName1').value,
+                NAME_VARIANT_2: document.getElementById('cfgName2').value,
+                NOTIFY_TELEGRAM_BOT_TOKEN: document.getElementById('cfgTgToken').value,
+                NOTIFY_TELEGRAM_CHAT_ID: document.getElementById('cfgTgChat').value,
+            };
+            await api('/api/config', 'POST', data);
+            const msg = document.getElementById('saveMsg');
+            msg.textContent = '✅ Settings saved!';
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 2000);
+        }
+
+        function togglePassword() {
+            const pw = document.getElementById('cfgPassword');
+            pw.type = pw.type === 'password' ? 'text' : 'password';
+        }
+
+        // ── Init ───────────────────────────────────────
+        loadConfig();
+        pollStatus();
+        pollLogs();
+        setInterval(pollStatus, 3000);
+        setInterval(pollLogs, 2000);
+    </script>
+</body>
+</html>
